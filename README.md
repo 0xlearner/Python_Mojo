@@ -1,33 +1,22 @@
-This is my take on the game of life. It implements all the fundamental logic of the traditional game, but 
-adds a few nice shortcuts.
-
-Normal Mode lets you play the traditional game.
-Insert Mode allows you to quickly drop cells rather than one at a time.
-Pan Mode lets you scroll around the infinite landscape to see your off-screen critters.
-
-
-Starting the Game
-------------------
-python3 game_of_life.py
-
 Running Tests
 -------------
 python3 tests.py
 
-Controls:
----------
-* left/right/up/down - Move cursor or pans depending on mode.
-* q - quit
-* c - insert a cell
-* x - delete a cell
-* space - step to next generation
+Using Options Parser
+--------------------
+Here is a small example, with plenty of comments
 
-Advanced Controls:
-------------------
-* i - Switch to insert mode. Cursor leaves a trail of cells.
-* p - Switch to pan mode. Pans around map. Doesn't move cursor.
-* n - Switch back to normal mode. 
+    from options_parser import parse_options
 
+    # These are the short options we accept
+    options =  [('-a', ''), ('-b', ''), ('-c', ''), ('-o', 'moo')]
+    # These are the long options we accept
+    longopts = ['verbose']
 
+    # Passed in arguments, this would normally be sys.argv[1:]
+    args = ['-a', '-o', 'moo', '--verbose', 'hi']
+    # Do the parsing
+    opts, pos = parse_options(args=args, shortopts=shortopts, longopts=longopts)
 
-
+    # opts is  [('-a', ''), ('-o', 'moo'), ('--verbose', '')]
+    # pos is  now ['hi']

@@ -1,53 +1,111 @@
-import unittest
+import options_parser
 
-from game_of_life import *
-from datastructures import Point
+def test(shortopts, args, options, positionals, longopts=[]):
+    """
+    Try running parse_options with shortopts and args.
+    Expect options and positionals
+    """
+    print("Trying to get opt with:\nshorts: %s\nlongs: %s" % (shortopts, longopts))
+    print("Args: %s" % args)
+    opts, pos = options_parser.parse_options(args=args, shortopts=shortopts, longopts=longopts)
 
-class BoardTestCase(unittest.TestCase):
+    print("Options returned: %s"%opts)
+    print("Options match? ", end="")
+    print(opts == options)
+    assert opts == options
 
-    def setUp(self):
-        self.initial_coordinates = [(1,1), (2,2), (3,3)]
-        self.initial_positions = [Point(x,y) for x,y in self.initial_coordinates]
-        self.board = Board(self.initial_positions)
+    print("Positionals Returned: %s" % pos)
+    print("Positionals match? ", end="")
+    print(pos == positionals)
+    assert pos == positionals
 
-    def test_init(self):
-        # Check that all the initial positions are filled
-        for x,y in self.initial_coordinates:
-            self.assertTrue(self.board.cell_at(Point(x,y)))
-        # Check that they are the only ones filled
-        self.assertEqual(len(self.board.cell_positions), len(self.initial_coordinates))
+# Test 1 
+print("\nTest 1...\n")
+shortopts = 'abco:'
+args = ['-abc']
+options =  [('-a', ''), ('-b', ''), ('-c', '')]
+positionals = [] 
+test(shortopts=shortopts, args=args, options=options, positionals=positionals)
 
-    def test_add_cell(self):
-        p = Point(100,100)
-        self.board.add_cell(p)
-        self.assertTrue(self.board.cell_at(p))
-        self.assertEqual(self.board.cell_count, len(self.initial_positions) + 1)
+# Test 2
+print("\nTest 2...\n")
+shortopts = 'abco:'
+args = ['-a', '-b', '-c', '-o', 'moo']
+options =  [('-a', ''), ('-b', ''), ('-c', ''), ('-o', 'moo')]
+positionals = []
+test(shortopts=shortopts, args=args, options=options, positionals=positionals)
 
-    def test_remove_cell(self):
-        self.board.remove_cell(Point(1,1))
-        self.assertFalse(self.board.cell_at(Point(1,1)))
-        self.assertEqual(self.board.cell_count, len(self.initial_positions) - 1)
+# Test 3
+print("\nTest 3...\n")
+shortopts = 'abco:'
+args = ['-a', '-b', '-c', '-omoo']
+options =  [('-a', ''), ('-b', ''), ('-c', ''), ('-o', 'moo')]
+positionals = []
+test(shortopts=shortopts, args=args, options=options, positionals=positionals)
 
-    def test_cell_at(self):
-        for x,y in self.initial_coordinates:
-            self.assertTrue(self.board.cell_at(Point(x,y)))
+# Test 4
+print("\nTest 4...\n")
+shortopts = 'abco:'
+args = ['-abomooc']
+options =  [('-a', ''), ('-b', ''), ('-o', 'mooc')]
+positionals = []
+test(shortopts=shortopts, args=args, options=options, positionals=positionals)
 
-    def test_cell_count(self):
-        self.assertEqual(len(self.initial_positions), self.board.cell_count)
+# Test 5
+print("\nTest 5...\n")
+shortopts = 'abco:'
+args = ['-a', '-bomooc', 'fudge']
+options =  [('-a', ''), ('-b', ''), ('-o', 'mooc')]
+positionals = ['fudge']
+test(shortopts=shortopts, args=args, options=options, positionals=positionals)
 
-    def test_get_empty_neighbour_set(self):
-        self.initial_coordinates = [(1,1), (2,2)]
-        self.initial_positions = [Point(x,y) for x,y in self.initial_coordinates]
-        self.board = Board(self.initial_positions)
-        expected_empty_neighbours_set = set([Point(row=0, col=1), Point(row=1, col=2), Point(row=3, col=2), Point(row=0, col=0),
-                                             Point(row=3, col=3), Point(row=3, col=1), Point(row=2, col=1), Point(row=2, col=0),
-                                             Point(row=1, col=3), Point(row=2, col=3), Point(row=1, col=0), Point(row=0, col=2)])
-        self.assertEqual(expected_empty_neighbours_set, self.board.empty_neighbour_set)
+# Test 6
+print("\nTest 6...\n")
+shortopts = 'abco:'
+args = ['-a', '-d']
+options =  []
+positionals = []
+try:
+    test(shortopts=shortopts, args=args, options=options, positionals=positionals)
+except options_parser.NoSuchOptionError:
+    print("Test 6 correctly raised error")
 
-    def test_live_neighbours_count(self):
-        self.assertEqual(self.board.live_neighbours_count(Point(1,1)), 1)
-        self.assertEqual(self.board.live_neighbours_count(Point(2,2)), 2)
-        self.assertEqual(self.board.live_neighbours_count(Point(3,3)), 1)
-        
-if __name__ == '__main__':
-    unittest.main()
+# Test 7
+print("\nTest 7...\n")
+shortopts = 'abco:'
+longopts = ['verbose']
+args = ['-a', '--verbose']
+options =  [('-a',''), ('--verbose','')]
+positionals = []
+test(shortopts=shortopts, args=args, options=options, positionals=positionals, longopts=longopts)
+
+# Test 8
+print("\nTest 8...\n")
+shortopts = 'abco:'
+longopts = ['verbose']
+args = ['-a', '--verbose', 'hey', 'hi']
+parsed_options =  [('-a',''), ('--verbose','')]
+positionals = ['hey', 'hi']
+test(shortopts=shortopts, args=args, options=parsed_options, positionals=positionals, longopts=longopts)
+
+# Test 9
+print("\nTest 9...\n")
+shortopts = 'abco:'
+longopts = ['verbose']
+args = ['-a', '--ver', 'hey', 'hi']
+parsed_options =  [('-a',''), ('--verbose','')]
+positionals = ['hey', 'hi']
+test(shortopts=shortopts, args=args, options=parsed_options, positionals=positionals, longopts=longopts)
+
+# Test 10
+print("\nTest 10...\n")
+shortopts = 'abco:'
+longopts = ['verbose', 'version=']
+args = ['-a', '--verb','--vers=10', 'hey', 'hi']
+parsed_options =  [('-a',''), ('--verbose',''), ('--version', '10')]
+positionals = ['hey', 'hi']
+test(shortopts=shortopts, args=args, options=parsed_options, positionals=positionals, longopts=longopts)
+
+
+
+
